@@ -1,6 +1,26 @@
-# nette-ares
+# Nette ARES
+
+[![Latest Stable Version](https://poser.pugx.org/nks-hub/nette-ares/v)](https://packagist.org/packages/nks-hub/nette-ares)
+[![Total Downloads](https://poser.pugx.org/nks-hub/nette-ares/downloads)](https://packagist.org/packages/nks-hub/nette-ares)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net/)
+[![Nette Version](https://img.shields.io/badge/nette-%5E3.1%20%7C%7C%20%5E4.0-blue.svg)](https://nette.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 Nette DI extension pro [ARES](https://ares.gov.cz/) (Administrativní registr ekonomických subjektů) — vyhledávání firem podle IČO i názvu s automatickým cachováním výsledků. PHP 8.1+.
+
+## Features
+
+- 🔍 **Vyhledání podle IČO** — strukturovaný výsledek s adresou, DIČ, právní formou
+- 📝 **Fulltextové vyhledávání** — hledání firem podle názvu s limitem výsledků
+- 💾 **Automatické cachování** — konfigurovatelný TTL (výchozí 1 měsíc)
+- ✅ **Kontrola aktivity** — ověření, zda firma není zaniklá
+- 🎯 **Nette integrace** — DI extension s auto-registrací přes `composer.json`
+- 🛡️ **Type-safe** — PHP 8.1+ s strict types a typed properties
+
+## Requirements
+
+- PHP 8.1+
+- Nette 3.1+ / 4.0+
 
 ## Instalace
 
@@ -153,6 +173,35 @@ Extension využívá oficiální [ARES REST API v3](https://ares.gov.cz/ekonomic
 
 Bez autentizace, bez rate-limitu ze strany ARES (doporučujeme rozumné cachování).
 
+## Testing
+
+```bash
+./vendor/bin/tester tests
+```
+
+## Changelog
+
+Viz [CHANGELOG.md](CHANGELOG.md)
+
 ## Licence
 
-MIT
+MIT License — viz [LICENSE](LICENSE)
+
+## Podpora
+
+- **Issues:** [GitHub Issues](https://github.com/nks-hub/nette-ares/issues)
+- **Dokumentace ARES:** [ares.gov.cz](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs)
+
+## Contributing
+
+Pull requesty jsou vítány! Pro větší změny prosím nejprve otevřete issue.
+
+## Autoři
+
+- **NKS Hub** — [github.com/nks-hub](https://github.com/nks-hub)
+
+## Related Links
+
+- [ARES REST API v3](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs)
+- [Nette Framework](https://nette.org)
+- [Packagist](https://packagist.org/packages/nks-hub/nette-ares)
