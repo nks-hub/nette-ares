@@ -145,9 +145,12 @@ class AresClient
             throw new AresException("ARES API je nedostupné ($url).");
         }
 
-        // Parse HTTP status from $http_response_header
+        // Parse HTTP status code
         $statusCode = 0;
-        if (isset($http_response_header[0]) && preg_match('/\d{3}/', $http_response_header[0], $m)) {
+        $headers = function_exists('http_get_last_response_headers')
+            ? http_get_last_response_headers()
+            : ($http_response_header ?? []);
+        if (isset($headers[0]) && preg_match('/\d{3}/', $headers[0], $m)) {
             $statusCode = (int) $m[0];
         }
 
