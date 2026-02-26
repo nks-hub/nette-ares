@@ -104,6 +104,19 @@ final class AresResult
     }
 
     /**
+     * Whether the subject is a natural person (FO) based on legal form code.
+     * Codes 100-109 = physical persons, everything else = legal entity.
+     */
+    public function isPhysicalPerson(): bool
+    {
+        if ($this->pravniForma === null) {
+            return false;
+        }
+        $code = (int) $this->pravniForma;
+        return $code >= 100 && $code <= 109;
+    }
+
+    /**
      * Return as array (useful for form filling, API responses).
      */
     public function toArray(): array
@@ -117,6 +130,8 @@ final class AresResult
             'zip' => $this->getFormattedPsc(),
             'country' => $this->kodStatu ?? 'CZ',
             'textovaAdresa' => $this->textovaAdresa,
+            'pravniForma' => $this->pravniForma,
+            'isPhysicalPerson' => $this->isPhysicalPerson(),
         ];
     }
 }
