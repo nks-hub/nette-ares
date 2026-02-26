@@ -1,0 +1,16 @@
+name: Update Packagist
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  packagist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Packagist
+        run: |
+          curl -s -X POST \
+            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
+            -d '{"repository":{"url":"https://github.com/nks-hub/nette-ares"}}'

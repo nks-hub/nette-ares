@@ -1,0 +1,40 @@
+{
+    "name": "nks-hub/nette-ares",
+    "description": "Nette extension for Czech ARES API — company lookup by IČO, search by name, structured results with caching. PHP 8.1+.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["nette", "ares", "czech", "ico", "dic", "company", "business-register"],
+    "homepage": "https://github.com/nks-hub/nette-ares",
+    "authors": [
+        {
+            "name": "NKS Hub",
+            "homepage": "https://github.com/nks-hub"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "nette/di": "^3.1 || ^4.0",
+        "nette/caching": "^3.2 || ^4.0",
+        "nette/utils": "^3.2 || ^4.0",
+        "nette/schema": "^1.2 || ^2.0"
+    },
+    "require-dev": {
+        "nette/tester": "^2.5",
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "NksHub\\NetteAres\\": "src/"
+        }
+    },
+    "extra": {
+        "nette": {
+            "extensions": {
+                "ares": "NksHub\\NetteAres\\DI\\AresExtension"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
