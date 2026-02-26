@@ -179,29 +179,28 @@ Bez autentizace, bez rate-limitu ze strany ARES (doporučujeme rozumné cachová
 ./vendor/bin/tester tests
 ```
 
-## Changelog
+## Contributing
 
-Viz [CHANGELOG.md](CHANGELOG.md)
+Pull requesty jsou vítány! Pro větší změny prosím nejprve otevřete issue.
+
+1. Fork repozitáře
+2. Vytvořte feature branch (`git checkout -b feature/nova-funkce`)
+3. Commit změn (`git commit -m 'feat: popis'`)
+4. Push branch (`git push origin feature/nova-funkce`)
+5. Otevřete Pull Request
+
+## Podpora
+
+- 📧 **Email:** dev@nks-hub.cz
+- 🐛 **Bug reports:** [GitHub Issues](https://github.com/nks-hub/nette-ares/issues)
+- 📖 **ARES API docs:** [ares.gov.cz](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs)
 
 ## Licence
 
 MIT License — viz [LICENSE](LICENSE)
 
-## Podpora
+---
 
-- **Issues:** [GitHub Issues](https://github.com/nks-hub/nette-ares/issues)
-- **Dokumentace ARES:** [ares.gov.cz](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs)
-
-## Contributing
-
-Pull requesty jsou vítány! Pro větší změny prosím nejprve otevřete issue.
-
-## Autoři
-
-- **NKS Hub** — [github.com/nks-hub](https://github.com/nks-hub)
-
-## Related Links
-
-- [ARES REST API v3](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs)
-- [Nette Framework](https://nette.org)
-- [Packagist](https://packagist.org/packages/nks-hub/nette-ares)
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/nks-hub">NKS Hub</a>
+</p>
