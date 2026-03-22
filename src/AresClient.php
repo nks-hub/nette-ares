@@ -51,6 +51,10 @@ class AresClient
             throw new AresException('Název firmy musí mít alespoň 3 znaky.');
         }
 
+        if ($limit < 1 || $limit > 100) {
+            throw new AresException("Limit musí být mezi 1 a 100, zadáno: $limit.");
+        }
+
         $cacheKey = 'search.' . md5("$name|$limit");
 
         return $this->cache->load($cacheKey, function () use ($name, $limit): array {
@@ -137,6 +141,10 @@ class AresClient
                 'timeout' => 10,
                 'ignore_errors' => true,
             ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+            ],
         ]);
 
         $response = @file_get_contents($url, false, $context);
@@ -147,9 +155,7 @@ class AresClient
 
         // Parse HTTP status code
         $statusCode = 0;
-        $headers = function_exists('http_get_last_response_headers')
-            ? http_get_last_response_headers()
-            : ($http_response_header ?? []);
+        $headers = $http_response_header ?? [];
         if (isset($headers[0]) && preg_match('/\d{3}/', $headers[0], $m)) {
             $statusCode = (int) $m[0];
         }
