@@ -6,49 +6,49 @@
 [![Nette Version](https://img.shields.io/badge/nette-%5E3.1%20%7C%7C%20%5E4.0-blue.svg)](https://nette.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Nette DI extension pro [ARES](https://ares.gov.cz/) (Administrativní registr ekonomických subjektů) — vyhledávání firem podle IČO i názvu s automatickým cachováním výsledků. PHP 8.1+.
+Nette DI extension for [ARES](https://ares.gov.cz/) (the Czech Administrative Register of Economic Subjects) — company lookup by IČO and by name with automatic result caching. PHP 8.1+.
 
 ## Features
 
-- 🔍 **Vyhledání podle IČO** — strukturovaný výsledek s adresou, DIČ, právní formou
-- 📝 **Fulltextové vyhledávání** — hledání firem podle názvu s limitem výsledků
-- 💾 **Automatické cachování** — konfigurovatelný TTL (výchozí 1 měsíc)
-- ✅ **Kontrola aktivity** — ověření, zda firma není zaniklá
-- 🎯 **Nette integrace** — DI extension s auto-registrací přes `composer.json`
-- 🛡️ **Type-safe** — PHP 8.1+ s strict types a typed properties
+- 🔍 **Lookup by IČO** - Structured result with address, VAT ID (DIČ) and legal form
+- 📝 **Full-text search** - Search companies by name with a result limit
+- 💾 **Automatic caching** - Configurable TTL (default 1 month)
+- ✅ **Activity check** - Verify that a company has not been dissolved
+- 🎯 **Nette integration** - DI extension with auto-registration via `composer.json`
+- 🛡️ **Type-safe** - PHP 8.1+ with strict types and typed properties
 
 ## Requirements
 
 - PHP 8.1+
 - Nette 3.1+ / 4.0+
 
-## Instalace
+## Installation
 
 ```bash
 composer require nks-hub/nette-ares
 ```
 
-## Registrace
+## Configuration
 
-Extension se registruje automaticky díky `extra.nette.extensions` v `composer.json`.
+The extension registers itself automatically thanks to `extra.nette.extensions` in `composer.json`.
 
-Ruční registrace v `config.neon`:
+Manual registration in `config.neon`:
 
 ```neon
 extensions:
     ares: NksHub\NetteAres\DI\AresExtension
 ```
 
-### Konfigurace (volitelná)
+Optional configuration:
 
 ```neon
 ares:
-    cacheTtl: '1 month'   # Jak dlouho cachovat výsledky (výchozí: 1 month)
+    cacheTtl: '1 month'   # How long to cache results (default: 1 month)
 ```
 
-## Použití
+## Usage
 
-### Vyhledání firmy podle IČO
+### Look up a company by IČO
 
 ```php
 use NksHub\NetteAres\AresClient;
@@ -80,7 +80,7 @@ class MyPresenter extends Nette\Application\UI\Presenter
 }
 ```
 
-### Vyhledání firem podle názvu
+### Search companies by name
 
 ```php
 $results = $this->ares->searchByName('Asseco', limit: 5);
@@ -90,21 +90,21 @@ foreach ($results as $result) {
 }
 ```
 
-### Kontrola aktivity firmy
+### Check whether a company is active
 
 ```php
 if ($this->ares->isActive('27074358')) {
-    echo 'Firma je aktivní';
+    echo 'Company is active';
 }
 ```
 
-### Získání DIČ
+### Get the VAT ID (DIČ)
 
 ```php
-$dic = $this->ares->getDic('27074358'); // "CZ27074358" nebo null
+$dic = $this->ares->getDic('27074358'); // "CZ27074358" or null
 ```
 
-### Použití v AJAX handleru (typicky pro formuláře)
+### Use in an AJAX handler (typically for forms)
 
 ```php
 public function handleAresLookup(string $ico): void
@@ -118,7 +118,7 @@ public function handleAresLookup(string $ico): void
 }
 ```
 
-`toArray()` vrací:
+`toArray()` returns:
 ```php
 [
     'ico'            => '27074358',
@@ -134,44 +134,44 @@ public function handleAresLookup(string $ico): void
 
 ### Cache
 
-Výsledky se automaticky cachují (výchozí: 1 měsíc). Manuální invalidace:
+Results are cached automatically (default: 1 month). Manual invalidation:
 
 ```php
-$this->ares->clearCacheByIco('27074358'); // konkrétní IČO
-$this->ares->clearCache();                 // celý ARES cache
+$this->ares->clearCacheByIco('27074358'); // a specific IČO
+$this->ares->clearCache();                 // the whole ARES cache
 ```
 
 ## AresResult
 
-Objekt `AresResult` obsahuje:
+The `AresResult` object contains:
 
-| Property | Typ | Popis |
+| Property | Type | Description |
 |---|---|---|
-| `ico` | `string` | IČO (8 číslic) |
-| `dic` | `?string` | DIČ (formát CZ + IČO) |
-| `obchodniJmeno` | `string` | Obchodní jméno |
-| `pravniForma` | `?string` | Kód právní formy |
-| `ulice` | `?string` | Název ulice |
-| `cisloDomovni` | `?int` | Číslo popisné |
-| `cisloOrientacni` | `?int` | Číslo orientační |
-| `mesto` | `?string` | Obec |
-| `castObce` | `?string` | Část obce |
-| `psc` | `?int` | PSČ |
-| `kodStatu` | `?string` | Kód státu |
-| `textovaAdresa` | `?string` | Celá adresa textem |
-| `datumVzniku` | `?string` | Datum vzniku |
-| `datumZaniku` | `?string` | Datum zániku |
+| `ico` | `string` | IČO (8 digits) |
+| `dic` | `?string` | DIČ (format CZ + IČO) |
+| `obchodniJmeno` | `string` | Business name |
+| `pravniForma` | `?string` | Legal form code |
+| `ulice` | `?string` | Street name |
+| `cisloDomovni` | `?int` | Building number (číslo popisné) |
+| `cisloOrientacni` | `?int` | Orientation number (číslo orientační) |
+| `mesto` | `?string` | Municipality |
+| `castObce` | `?string` | Municipality part |
+| `psc` | `?int` | Postal code (PSČ) |
+| `kodStatu` | `?string` | Country code |
+| `textovaAdresa` | `?string` | Full address as text |
+| `datumVzniku` | `?string` | Date of establishment |
+| `datumZaniku` | `?string` | Date of dissolution |
 
-Helper metody: `getStreet()`, `getCity()`, `getFormattedPsc()`, `toArray()`.
+Helper methods: `getStreet()`, `getCity()`, `getFormattedPsc()`, `toArray()`.
 
 ## API
 
-Extension využívá oficiální [ARES REST API v3](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs):
+The extension uses the official [ARES REST API v3](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs):
 
-- `GET /ekonomicke-subjekty/{ico}` — vyhledání podle IČO
-- `POST /ekonomicke-subjekty/vyhledat` — fulltextové vyhledávání
+- `GET /ekonomicke-subjekty/{ico}` — lookup by IČO
+- `POST /ekonomicke-subjekty/vyhledat` — full-text search
 
-Bez autentizace, bez rate-limitu ze strany ARES (doporučujeme rozumné cachování).
+No authentication and no rate limit on the ARES side (sensible caching is recommended).
 
 ## Testing
 
@@ -181,23 +181,23 @@ Bez autentizace, bez rate-limitu ze strany ARES (doporučujeme rozumné cachová
 
 ## Contributing
 
-Pull requesty jsou vítány! Pro větší změny prosím nejprve otevřete issue.
+Contributions are welcome! For major changes, please open an issue first.
 
-1. Fork repozitáře
-2. Vytvořte feature branch (`git checkout -b feature/nova-funkce`)
-3. Commit změn (`git commit -m 'feat: popis'`)
-4. Push branch (`git push origin feature/nova-funkce`)
-5. Otevřete Pull Request
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: description'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## Podpora
+## Support
 
 - 📧 **Email:** dev@nks-hub.cz
 - 🐛 **Bug reports:** [GitHub Issues](https://github.com/nks-hub/nette-ares/issues)
 - 📖 **ARES API docs:** [ares.gov.cz](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs)
 
-## Licence
+## License
 
-MIT License — viz [LICENSE](LICENSE)
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
