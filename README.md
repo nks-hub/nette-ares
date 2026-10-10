@@ -173,10 +173,12 @@ The extension uses the official [ARES REST API v3](https://ares.gov.cz/ekonomick
 
 No authentication and no rate limit on the ARES side (sensible caching is recommended).
 
-## Testing
+## Development
+
+The package has no automated test suite yet. Validate the package manifest with:
 
 ```bash
-./vendor/bin/tester tests
+composer validate
 ```
 
 ## Contributing
