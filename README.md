@@ -6,16 +6,16 @@
 [![Nette Version](https://img.shields.io/badge/nette-%5E3.1%20%7C%7C%20%5E4.0-blue.svg)](https://nette.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Nette DI extension for [ARES](https://ares.gov.cz/) (the Czech Administrative Register of Economic Subjects) — company lookup by IČO and by name with automatic result caching. PHP 8.1+.
+Nette DI extension for [ARES](https://ares.gov.cz/) (the Czech Administrative Register of Economic Subjects): company lookup by IČO and by name, with cached results. PHP 8.1+.
 
 ## Features
 
-- 🔍 **Lookup by IČO** - Structured result with address, VAT ID (DIČ) and legal form
-- 📝 **Full-text search** - Search companies by name with a result limit
-- 💾 **Automatic caching** - Configurable TTL (default 1 month)
-- ✅ **Activity check** - Verify that a company has not been dissolved
-- 🎯 **Nette integration** - DI extension with auto-registration via `composer.json`
-- 🛡️ **Type-safe** - PHP 8.1+ with strict types and typed properties
+- 🔍 **Lookup by IČO** - Returns an `AresResult` with address, VAT ID (DIČ) and legal form
+- 📝 **Search by name** - Returns up to `limit` (default 10) matching companies; the name needs at least 3 characters
+- 💾 **Caching** - Results are cached for `cacheTtl` (default 1 month) and can be cleared per IČO
+- ✅ **Activity check** - `isActive()` returns false for a dissolved or unknown company
+- 🎯 **Nette integration** - DI extension registered through `extra.nette.extensions` in `composer.json`
+- 🛡️ **Strict types** - Every source file declares `strict_types=1`; result properties are typed
 
 ## Requirements
 
@@ -30,9 +30,7 @@ composer require nks-hub/nette-ares
 
 ## Configuration
 
-The extension registers itself automatically thanks to `extra.nette.extensions` in `composer.json`.
-
-Manual registration in `config.neon`:
+Nette picks the extension up from `extra.nette.extensions` in `composer.json`. To register it manually in `config.neon`:
 
 ```neon
 extensions:
@@ -134,7 +132,7 @@ public function handleAresLookup(string $ico): void
 
 ### Cache
 
-Results are cached automatically (default: 1 month). Manual invalidation:
+Results stay cached for `cacheTtl` (default 1 month). To invalidate them:
 
 ```php
 $this->ares->clearCacheByIco('27074358'); // a specific IČO
@@ -142,8 +140,6 @@ $this->ares->clearCache();                 // the whole ARES cache
 ```
 
 ## AresResult
-
-The `AresResult` object contains:
 
 | Property | Type | Description |
 |---|---|---|
@@ -166,16 +162,16 @@ Helper methods: `getStreet()`, `getCity()`, `getFormattedPsc()`, `toArray()`.
 
 ## API
 
-The extension uses the official [ARES REST API v3](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs):
+The extension calls the [ARES REST API v3](https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/v3/api-docs):
 
-- `GET /ekonomicke-subjekty/{ico}` — lookup by IČO
-- `POST /ekonomicke-subjekty/vyhledat` — full-text search
+- `GET /ekonomicke-subjekty/{ico}`: lookup by IČO
+- `POST /ekonomicke-subjekty/vyhledat`: search by name
 
-No authentication and no rate limit on the ARES side (sensible caching is recommended).
+ARES requires no authentication and has no rate limit. Keep caching on anyway.
 
 ## Development
 
-The package has no automated test suite yet. Validate the package manifest with:
+There is no test suite. Validate the package manifest with:
 
 ```bash
 composer validate
