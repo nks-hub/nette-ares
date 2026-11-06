@@ -13,7 +13,8 @@ Nette DI extension for [ARES](https://ares.gov.cz/) (the Czech Administrative Re
 - 🔍 **Lookup by IČO** - Returns an `AresResult` with address, VAT ID (DIČ) and legal form
 - 📝 **Search by name** - Returns up to `limit` (default 10) matching companies; the name needs at least 3 characters
 - 💾 **Caching** - Results are cached for `cacheTtl` (default 1 month) and can be cleared per IČO
-- ✅ **Activity check** - `isActive()` returns false for a dissolved or unknown company
+- ✅ **Activity check** - `isActive()` returns false for a dissolved, unknown or malformed IČO and throws when ARES cannot be reached
+- 🔢 **IČO checksum** - `AresClient::isValidIco()` verifies the modulo 11 check digit without a network call
 - 🎯 **Nette integration** - DI extension registered through `extra.nette.extensions` in `composer.json`
 - 🛡️ **Strict types** - Every source file declares `strict_types=1`; result properties are typed
 
@@ -91,10 +92,23 @@ foreach ($results as $result) {
 ### Check whether a company is active
 
 ```php
-if ($this->ares->isActive('27074358')) {
-    echo 'Company is active';
+try {
+    echo $this->ares->isActive('27074358') ? 'Company is active' : 'Company is dissolved or unknown';
+} catch (AresException $e) {
+    echo 'ARES is unavailable, try again later';
 }
 ```
+
+`isActive()` returns `false` only when ARES answers that the IČO is unknown (HTTP 404), the IČO is malformed, or the company has a dissolution date. A connection failure, a timeout or an HTTP 5xx answer throws `AresException`, so an outage is never reported as a dissolved company. The "not found" exception has code `404`; other API errors carry the HTTP status code.
+
+### Validate the IČO checksum
+
+```php
+AresClient::isValidIco('27074358'); // true
+AresClient::isValidIco('27074359'); // false
+```
+
+`findByIco()` checks only the format (8 digits after padding), so it still asks ARES about numbers with a wrong check digit. Call `isValidIco()` first to reject typos without a request.
 
 ### Get the VAT ID (DIČ)
 
@@ -127,6 +141,8 @@ public function handleAresLookup(string $ico): void
     'zip'            => '140 00',
     'country'        => 'CZ',
     'textovaAdresa'  => 'Budějovická 778/3a, Michle, 14000 Praha 4',
+    'pravniForma'    => '121',
+    'isPhysicalPerson' => false,
 ]
 ```
 
@@ -167,14 +183,15 @@ The extension calls the [ARES REST API v3](https://ares.gov.cz/ekonomicke-subjek
 - `GET /ekonomicke-subjekty/{ico}`: lookup by IČO
 - `POST /ekonomicke-subjekty/vyhledat`: search by name
 
-ARES requires no authentication and has no rate limit. Keep caching on anyway.
+ARES requires no authentication. Keep caching on.
 
 ## Development
 
-There is no test suite. Validate the package manifest with:
+Tests use [Nette Tester](https://tester.nette.org/) and mock the HTTP layer, so they run offline:
 
 ```bash
-composer validate
+composer install
+composer test
 ```
 
 ## Contributing

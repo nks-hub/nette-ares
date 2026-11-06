@@ -7,6 +7,7 @@ namespace NksHub\NetteAres;
 use Nette\Caching\Cache;
 use Nette\Caching\Storage;
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 
 class AresClient
 {
@@ -33,7 +34,7 @@ class AresClient
         $ico = self::normalizeIco($ico);
 
         return $this->cache->load("ico.$ico", function () use ($ico): AresResult {
-            $data = $this->request('GET', "/ekonomicke-subjekty/$ico");
+            $data = $this->request('GET', "/ekonomicke-subjekty/$ico", null, $ico);
             return AresResult::fromApi($data);
         }, [Cache::Expire => $this->cacheTtl]);
     }
@@ -74,15 +75,46 @@ class AresClient
 
     /**
      * Check if a company with given IČO exists and is active.
+     * Returns false for a malformed, unknown (404) or dissolved IČO.
+     *
+     * @throws AresException when ARES cannot be reached or answers with an error other than "not found"
      */
     public function isActive(string $ico): bool
     {
         try {
-            $result = $this->findByIco($ico);
-            return $result->datumZaniku === null;
+            $ico = self::normalizeIco($ico);
         } catch (AresException) {
             return false;
         }
+
+        try {
+            return $this->findByIco($ico)->datumZaniku === null;
+        } catch (AresException $e) {
+            if ($e->getCode() === 404) {
+                return false;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Verify the IČO checksum (modulo 11 over the first seven digits).
+     * Accepts the same input forms as normalizeIco(); returns false instead of throwing.
+     */
+    public static function isValidIco(string $ico): bool
+    {
+        try {
+            $ico = self::normalizeIco($ico);
+        } catch (AresException) {
+            return false;
+        }
+
+        $sum = 0;
+        for ($i = 0; $i < 7; $i++) {
+            $sum += (int) $ico[$i] * (8 - $i);
+        }
+
+        return (11 - $sum % 11) % 10 === (int) $ico[7];
     }
 
     /**
@@ -127,17 +159,59 @@ class AresClient
     }
 
     /**
+     * @param string|null $subject IČO shown in the "not found" message
      * @throws AresException
      */
-    private function request(string $method, string $path, ?array $body = null): array
+    private function request(string $method, string $path, ?array $body = null, ?string $subject = null): array
     {
         $url = self::API_BASE . $path;
+        [$response, $headers] = $this->send($method, $url, $body !== null ? Json::encode($body) : null);
 
+        if ($response === false) {
+            throw new AresException("ARES API je nedostupné ($url).");
+        }
+
+        $statusCode = 0;
+        if (isset($headers[0]) && preg_match('/\d{3}/', $headers[0], $m)) {
+            $statusCode = (int) $m[0];
+        }
+
+        try {
+            $data = Json::decode($response, forceArrays: true);
+        } catch (JsonException) {
+            $data = null;
+        }
+
+        if ($statusCode === 404 || (is_array($data) && ($data['kod'] ?? null) === 'NENALEZENO')) {
+            throw AresException::notFound($subject ?? $path);
+        }
+
+        if ($statusCode >= 400) {
+            $message = is_array($data) ? ($data['popis'] ?? $data['kod'] ?? "HTTP $statusCode") : "HTTP $statusCode";
+            throw new AresException("ARES API chyba: $message", $statusCode);
+        }
+
+        if (!is_array($data)) {
+            throw new AresException('ARES API vrátilo neplatnou odpověď.');
+        }
+
+        return $data;
+    }
+
+    /**
+     * Perform the HTTP call. Overridable so tests can run without network.
+     *
+     * @return array{0: string|false, 1: list<string>} response body (false on connection failure) and response headers
+     */
+    protected function send(string $method, string $url, ?string $content): array
+    {
         $context = stream_context_create([
             'http' => [
                 'method' => $method,
-                'header' => "Accept: application/json\r\nContent-Type: application/json\r\n",
-                'content' => $body !== null ? Json::encode($body) : null,
+                'header' => "Accept: application/json
+Content-Type: application/json
+",
+                'content' => $content,
                 'timeout' => 10,
                 'ignore_errors' => true,
             ],
@@ -149,28 +223,6 @@ class AresClient
 
         $response = @file_get_contents($url, false, $context);
 
-        if ($response === false) {
-            throw new AresException("ARES API je nedostupné ($url).");
-        }
-
-        // Parse HTTP status code
-        $statusCode = 0;
-        $headers = $http_response_header ?? [];
-        if (isset($headers[0]) && preg_match('/\d{3}/', $headers[0], $m)) {
-            $statusCode = (int) $m[0];
-        }
-
-        $data = Json::decode($response, forceArrays: true);
-
-        if ($statusCode === 404 || ($data['kod'] ?? null) === 'NENALEZENO') {
-            throw AresException::notFound($body['ico'] ?? $path);
-        }
-
-        if ($statusCode >= 400) {
-            $message = $data['popis'] ?? $data['kod'] ?? "HTTP $statusCode";
-            throw new AresException("ARES API chyba: $message", $statusCode);
-        }
-
-        return $data;
+        return [$response, $http_response_header ?? []];
     }
 }
